@@ -50,6 +50,14 @@
   - type: ResearchClient
   - type: TechnologyDatabase
   - type: UnifiedPowerReceiver
+  - type: PowerConsumer
+    voltage: Medium
+  - type: NodeContainer
+    examinable: true
+    nodes:
+      input:
+        !type:CableDeviceNode
+        nodeGroupID: MVPower
 
 # a lathe that can be sped up with space lube / slowed down with glue
 - type: entity

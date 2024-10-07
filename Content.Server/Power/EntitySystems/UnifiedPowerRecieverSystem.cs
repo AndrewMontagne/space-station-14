@@ -13,7 +13,7 @@ namespace Content.Server.Power.EntitySystems
     ///     - <see cref="PowerConsumerComponent"/>
     ///     - Installed Batteries
     /// </summary>
-    public sealed partial class UnifiedPowerReceiverSystem : SharedUnifiedPowerReceiverSystem
+    public sealed partial class UnifiedPowerReceiverSystem : EntitySystem
     {
         public override void Initialize()
         {
@@ -23,37 +23,31 @@ namespace Content.Server.Power.EntitySystems
             SubscribeLocalEvent<UnifiedPowerReceiverComponent, PowerChangedEvent>(OnApcPowerChanged);
         }
 
-        public PowerConsumerComponent? CablePowerConsumer = null;
-        private bool CablePowerConsumerPowered = false;
-        private float CablePowerConsumerRecievedPower = 0.0f;
         private void OnCablePowerChanged(EntityUid uid, UnifiedPowerReceiverComponent component, ref PowerConsumerReceivedChanged args)
         {
             if (args.ReceivedPower < args.DrawRate)
             {
-                this.CablePowerConsumerPowered = false;
+                component.CablePowerConsumerPowered = false;
             }
             else
             {
-                this.CablePowerConsumerPowered = true;
+                component.CablePowerConsumerPowered = true;
             }
-            CablePowerConsumerRecievedPower = args.ReceivedPower;
+            component.CablePowerConsumerRecievedPower = args.ReceivedPower;
             this.ReconsiderPowered(uid, component);
         }
 
-        public ApcPowerProviderComponent? ApcPowerProvider = null;
-        private bool ApcPowerProviderPowered = false;
-        private float ApcPowerProviderRecievedPower = 0.0f;
         private void OnApcPowerChanged(EntityUid uid, UnifiedPowerReceiverComponent component, ref PowerChangedEvent args)
         {
             if (!args.Powered)
             {
-                this.ApcPowerProviderPowered = false;
+                component.ApcPowerProviderPowered = false;
             }
             else
             {
-                this.ApcPowerProviderPowered = true;
+                component.ApcPowerProviderPowered = true;
             }
-            this.ApcPowerProviderRecievedPower = args.ReceivingPower;
+            component.ApcPowerProviderRecievedPower = args.ReceivingPower;
             this.ReconsiderPowered(uid, component);
         }
 
@@ -62,14 +56,14 @@ namespace Content.Server.Power.EntitySystems
             bool NextPowered = false;
             float NextRecievedPower = 0.0f;
 
-            if (this.CablePowerConsumerPowered) {
+            if (component.CablePowerConsumerPowered) {
                 NextPowered = true;
-                NextRecievedPower = CablePowerConsumerRecievedPower;
+                NextRecievedPower = component.CablePowerConsumerRecievedPower;
                 component.PowerSource = "Cable";
             }
-            if (this.ApcPowerProviderPowered) {
+            if (component.ApcPowerProviderPowered) {
                 NextPowered = true;
-                NextRecievedPower = ApcPowerProviderRecievedPower;
+                NextRecievedPower = component.ApcPowerProviderRecievedPower;
                 component.PowerSource = "APC";
             }
 
@@ -78,8 +72,10 @@ namespace Content.Server.Power.EntitySystems
                 component.PowerSource = "None";
             }
 
-            var Event = new UnifiedPowerChangedEvent(this.Powered, NextRecievedPower);
+            var Event = new UnifiedPowerChangedEvent(component.Powered, NextRecievedPower);
             RaiseLocalEvent(uid, ref Event);
+
+            Dirty(uid, component);
         }
     }
 }
