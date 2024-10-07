@@ -61,7 +61,7 @@ namespace Content.Server.Lathe
             base.Initialize();
             SubscribeLocalEvent<LatheComponent, GetMaterialWhitelistEvent>(OnGetWhitelist);
             SubscribeLocalEvent<LatheComponent, MapInitEvent>(OnMapInit);
-            SubscribeLocalEvent<LatheComponent, PowerChangedEvent>(OnPowerChanged);
+            SubscribeLocalEvent<LatheComponent, UnifiedPowerChangedEvent>(OnPowerChanged);
             SubscribeLocalEvent<LatheComponent, TechnologyDatabaseModifiedEvent>(OnDatabaseModified);
             SubscribeLocalEvent<LatheComponent, ResearchRegistrationChangedEvent>(OnResearchRegistrationChanged);
 
@@ -337,7 +337,7 @@ namespace Content.Server.Lathe
             _appearance.SetData(uid, LatheVisuals.IsRunning, isRunning);
         }
 
-        private void OnPowerChanged(EntityUid uid, LatheComponent component, ref PowerChangedEvent args)
+        private void OnPowerChanged(EntityUid uid, LatheComponent component, ref UnifiedPowerChangedEvent args)
         {
             if (!args.Powered)
             {
