@@ -1,4 +1,5 @@
 using Content.Client.Power.Components;
+using Content.Shared.Power.Components;
 
 namespace Content.Client.Power.EntitySystems;
 
@@ -6,11 +7,16 @@ public static class StaticPowerSystem
 {
     // Using this makes the call shorter.
     // ReSharper disable once UnusedParameter.Global
-    public static bool IsPowered(this EntitySystem system, EntityUid uid, IEntityManager entManager, ApcPowerReceiverComponent? receiver = null)
+    public static bool IsPowered(this EntitySystem system, EntityUid uid, IEntityManager entManager)
     {
-        if (receiver == null && !entManager.TryGetComponent(uid, out receiver))
-            return false;
+        UnifiedPowerReceiverComponent? unifiedPowerReceiver = null;
+        if (entManager.TryGetComponent(uid, out unifiedPowerReceiver) && unifiedPowerReceiver.Powered)
+            return true;
 
-        return receiver.Powered;
+        ApcPowerReceiverComponent? apcPowerReceiver = null;
+        if (entManager.TryGetComponent(uid, out apcPowerReceiver) && apcPowerReceiver.Powered)
+            return true;
+
+        return false;
     }
 }

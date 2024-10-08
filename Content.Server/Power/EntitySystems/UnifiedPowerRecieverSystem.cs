@@ -5,6 +5,8 @@ using Content.Server.Power.Components;
 using Content.Shared.Power.Components;
 using Content.Shared.Power;
 
+using Robust.Server.GameObjects;
+
 namespace Content.Server.Power.EntitySystems
 {
     /// <summary>
@@ -15,6 +17,8 @@ namespace Content.Server.Power.EntitySystems
     /// </summary>
     public sealed partial class UnifiedPowerReceiverSystem : EntitySystem
     {
+        [Dependency] private readonly AppearanceSystem _appearance = default!;
+
         public override void Initialize()
         {
             base.Initialize();
@@ -56,16 +60,18 @@ namespace Content.Server.Power.EntitySystems
             bool NextPowered = false;
             float NextRecievedPower = 0.0f;
 
-            if (component.CablePowerConsumerPowered) {
+            if (component.CablePowerConsumerPowered && component.CablePowerConsumerRecievedPower > 0.0f) {
                 NextPowered = true;
                 NextRecievedPower = component.CablePowerConsumerRecievedPower;
                 component.PowerSource = "Cable";
             }
-            if (component.ApcPowerProviderPowered) {
+            if (component.ApcPowerProviderPowered && component.ApcPowerProviderRecievedPower > 0.0f) {
                 NextPowered = true;
                 NextRecievedPower = component.ApcPowerProviderRecievedPower;
                 component.PowerSource = "APC";
             }
+
+            bool PowerChanged = component.Powered != NextPowered;
 
             component.Powered = NextPowered;
             if (!NextPowered) {
@@ -74,6 +80,12 @@ namespace Content.Server.Power.EntitySystems
 
             var Event = new UnifiedPowerChangedEvent(component.Powered, NextRecievedPower);
             RaiseLocalEvent(uid, ref Event);
+
+            if (PowerChanged) {
+                var appearanceQuery = GetEntityQuery<AppearanceComponent>();
+                if (appearanceQuery.TryComp(uid, out var appearance))
+                    _appearance.SetData(uid, PowerDeviceVisuals.Powered, NextPowered, appearance);
+            }
 
             Dirty(uid, component);
         }
