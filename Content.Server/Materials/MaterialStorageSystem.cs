@@ -2,6 +2,7 @@
 using Content.Server.Administration.Logs;
 using Content.Shared.Materials;
 using Content.Shared.Popups;
+using Content.Shared.Power.Components;
 using Content.Shared.Stacks;
 using Content.Server.Power.Components;
 using Content.Server.Stack;
@@ -97,8 +98,15 @@ public sealed class MaterialStorageSystem : SharedMaterialStorageSystem
     {
         if (!Resolve(receiver, ref storage) || !Resolve(toInsert, ref material, ref composition, false))
             return false;
-        if (TryComp<ApcPowerReceiverComponent>(receiver, out var power) && !power.Powered)
+
+        if (TryComp<UnifiedPowerReceiverComponent>(receiver, out var power))
+        {
+            if (!power.Powered)
+                return false;
+        }
+        else if (TryComp<ApcPowerReceiverComponent>(receiver, out var apcPower) && !apcPower.Powered)
             return false;
+
         if (!base.TryInsertMaterialEntity(user, toInsert, receiver, storage, material, composition))
             return false;
         _audio.PlayPvs(storage.InsertingSound, receiver);
