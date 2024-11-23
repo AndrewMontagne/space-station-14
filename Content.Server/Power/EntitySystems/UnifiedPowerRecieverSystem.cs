@@ -2,6 +2,7 @@ using Content.Server.Power.NodeGroups;
 using Content.Server.Power.Pow3r;
 using Content.Server.Power.EntitySystems;
 using Content.Server.Power.Components;
+using Content.Shared.PowerCell.Components;
 using Content.Shared.Power.Components;
 using Content.Shared.Power;
 
@@ -88,6 +89,16 @@ namespace Content.Server.Power.EntitySystems
             }
 
             Dirty(uid, component);
+        }
+
+        public override void Update(float frameTime)
+        {
+            var query = EntityQueryEnumerator<UnifiedPowerReceiverComponent, PowerCellSlotComponent>();
+            while (query.MoveNext(out var uid, out var comp, out var powercellslot))
+            {
+                if (!comp.BatteryPowerProviderEnabled)
+                    continue;
+            }
         }
     }
 }
